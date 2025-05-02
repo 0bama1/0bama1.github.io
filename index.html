@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poop Tracker</title>
   <style>
     body {
@@ -13,67 +12,49 @@
       background-attachment: fixed;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       color: white;
       text-shadow: 1px 1px 4px black;
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
     }
-
     h1 {
       margin: 40px 0 20px;
-      font-size: 36px;
       color: #fff;
       text-shadow: 1px 1px 3px #000;
+      text-align: center;
     }
-
     #current-time {
-      font-size: 32px;
+      font-size: 24px;
       font-weight: bold;
       color: white;
       margin-bottom: 30px;
       text-shadow: 1px 1px 3px #000;
     }
-
-    #trackers {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      width: 100%;
-      max-width: 500px;
-      padding: 0 10px;
-    }
-
     .tracker {
-      margin: 0 auto;
+      margin: 20px auto;
       padding: 20px;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.9);
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      width: 100%;
-      max-width: 400px;
+      width: 90%;
+      max-width: 320px;
       color: black;
     }
-
     .name {
       font-size: 24px;
       margin-bottom: 10px;
     }
-
     .count {
-      font-size: 32px;
+      font-size: 36px;
       margin: 10px 0;
     }
-
     .timestamp {
       font-size: 14px;
       color: #555;
       margin-bottom: 10px;
     }
-
     .btn {
       font-size: 16px;
       padding: 10px 20px;
@@ -81,26 +62,20 @@
       cursor: pointer;
       border: none;
       border-radius: 6px;
-      width: 100%;
-      max-width: 200px;
     }
-
     .btn-log {
       background-color: #4caf50;
       color: white;
     }
-
     .btn-reset-all {
       background-color: #ff9800;
       color: white;
       margin-top: 30px;
     }
-
     .btn-toggle-log {
       background-color: #2196f3;
       color: white;
     }
-
     .log {
       display: none;
       text-align: left;
@@ -110,40 +85,49 @@
       overflow-y: auto;
       border-top: 1px solid #ccc;
       padding-top: 10px;
-      color: black;
     }
-
     .log-entry {
       margin-bottom: 4px;
     }
 
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 28px;
-      }
+    /* Modal Styles */
+    #passcode-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
 
-      #current-time {
-        font-size: 24px;
-      }
+    #passcode-modal .modal-content {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
+    }
 
-      .count {
-        font-size: 24px;
-      }
+    #passcode-modal input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
 
-      .btn {
-        font-size: 14px;
-        padding: 8px;
-      }
-
-      .tracker {
-        padding: 15px;
-      }
+    #passcode-modal .btn {
+      width: 100px;
     }
   </style>
 </head>
 <body>
 
-<h1>monthly poop Tracker</h1>
+<h1>Monthly Poop Tracker</h1>
 <div id="current-time"></div>
 
 <div id="trackers">
@@ -175,9 +159,22 @@
   </div>
 </div>
 
-<button class="btn btn-reset-all" onclick="verifyReset()">reset All</button>
+<button class="btn btn-reset-all" onclick="verifyReset()">Reset All</button>
 
+<!-- Audio File -->
 <audio id="arabic" src="arabic.mp3" preload="auto"></audio>
+
+<!-- Passcode Modal -->
+<div id="passcode-modal">
+  <div class="modal-content">
+    <h3>Enter Passcode</h3>
+    <input type="password" id="passcode-input" />
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="btn" style="background-color: #4caf50; color: white;" onclick="submitPasscode()">Submit</button>
+      <button class="btn" style="background-color: #ccc;" onclick="closePasscodeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const names = ["D", "O", "P"];
@@ -212,15 +209,6 @@
   }
 
   setInterval(updateTime, 1000);
-
-  function verifyPasscodeAndIncrement(name) {
-    const input = prompt(`Enter passcode for ${name}:`);
-    if (input === passcodes[name]) {
-      increment(name);
-    } else {
-      alert("wrong passwrod");
-    }
-  }
 
   function increment(name) {
     counts[name]++;
@@ -263,14 +251,46 @@
     }
   }
 
+  let passcodeTarget = null;
+  let actionType = null;
+
+  function verifyPasscodeAndIncrement(name) {
+    passcodeTarget = name;
+    actionType = "increment";
+    openPasscodeModal();
+  }
+
   function verifyReset() {
-    const password = prompt("dont try:");
-    if (password === "42069") {
-      if (confirm("reset?")) {
-        resetAll();
-      }
+    passcodeTarget = null;
+    actionType = "reset";
+    openPasscodeModal();
+  }
+
+  function openPasscodeModal() {
+    document.getElementById("passcode-input").value = "";
+    document.getElementById("passcode-modal").style.display = "flex";
+    setTimeout(() => {
+      document.getElementById("passcode-input").focus();
+    }, 100);
+  }
+
+  function closePasscodeModal() {
+    document.getElementById("passcode-modal").style.display = "none";
+    passcodeTarget = null;
+    actionType = null;
+  }
+
+  function submitPasscode() {
+    const input = document.getElementById("passcode-input").value.trim();
+
+    if (actionType === "increment" && passcodes[passcodeTarget] === input) {
+      closePasscodeModal();
+      increment(passcodeTarget);
+    } else if (actionType === "reset" && input === "42069") {
+      closePasscodeModal();
+      if (confirm("reset?")) resetAll();
     } else {
-      alert("wrong passwrod.");
+      alert("wrong passwrod");
     }
   }
 
