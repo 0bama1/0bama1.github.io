@@ -67,6 +67,10 @@
       background-color: #4caf50;
       color: white;
     }
+    .btn-remove {
+      background-color: #f44336; /* Red for Remove */
+      color: white;
+    }
     .btn-reset-all {
       background-color: #ff9800;
       color: white;
@@ -136,6 +140,7 @@
     <div class="count" id="count-D">0 poops</div>
     <div class="timestamp" id="time-D">Last log: N/A</div>
     <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('D')">I shit today</button>
+    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('D')">Remove shit</button>
     <button class="btn btn-toggle-log" onclick="toggleLog('D')">Show Log</button>
     <div class="log" id="log-D"></div>
   </div>
@@ -145,6 +150,7 @@
     <div class="count" id="count-O">0 poops</div>
     <div class="timestamp" id="time-O">Last log: N/A</div>
     <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('O')">I shit today</button>
+    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('O')">Remove shit</button>
     <button class="btn btn-toggle-log" onclick="toggleLog('O')">Show Log</button>
     <div class="log" id="log-O"></div>
   </div>
@@ -154,6 +160,7 @@
     <div class="count" id="count-P">0 poops</div>
     <div class="timestamp" id="time-P">Last log: N/A</div>
     <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('P')">I shit today</button>
+    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('P')">Remove shit</button>
     <button class="btn btn-toggle-log" onclick="toggleLog('P')">Show Log</button>
     <div class="log" id="log-P"></div>
   </div>
@@ -228,6 +235,26 @@
     document.getElementById('arabic').play();
   }
 
+  function decrement(name) {
+    if (counts[name] > 0) {
+      counts[name]--;
+      const now = new Date();
+      const formattedTime = now.toLocaleString();
+      times[name] = formattedTime;
+      logs[name].pop(); // Remove the most recent log entry
+
+      localStorage.setItem(`count-${name}`, counts[name]);
+      localStorage.setItem(`time-${name}`, formattedTime);
+      localStorage.setItem(`log-${name}`, JSON.stringify(logs[name]));
+
+      document.getElementById(`count-${name}`).textContent = counts[name] + " poops";
+      document.getElementById(`time-${name}`).textContent = "Last log: " + formattedTime;
+      renderLog(name);
+    } else {
+      alert("No poop logs to remove!");
+    }
+  }
+
   function renderLog(name) {
     const logDiv = document.getElementById(`log-${name}`);
     logDiv.innerHTML = "";
@@ -260,6 +287,12 @@
     openPasscodeModal();
   }
 
+  function verifyPasscodeAndDecrement(name) {
+    passcodeTarget = name;
+    actionType = "decrement";
+    openPasscodeModal();
+  }
+
   function verifyReset() {
     passcodeTarget = null;
     actionType = "reset";
@@ -286,6 +319,9 @@
     if (actionType === "increment" && passcodes[passcodeTarget] === input) {
       closePasscodeModal();
       increment(passcodeTarget);
+    } else if (actionType === "decrement" && passcodes[passcodeTarget] === input) {
+      closePasscodeModal();
+      decrement(passcodeTarget);
     } else if (actionType === "reset" && input === "42069") {
       closePasscodeModal();
       if (confirm("reset?")) resetAll();
