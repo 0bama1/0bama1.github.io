@@ -1,232 +1,163 @@
-<!-- START OF FILE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Poop Tracker</title>
+  <meta charset="UTF-8">
+  <title>Shit Tracker</title>
   <style>
-    /* ... [your original styles remain unchanged] ... */
-    .btn-remove {
-      background-color: #f44336;
+    body {
+      background-image: url('orrin.jpg');
+      background-size: 90%;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-attachment: fixed;
+      background-color: black;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      color: white;
+      text-shadow: 1px 1px 4px black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-top: 20px;
+    }
+
+    .player {
+      margin: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2); /* 20% opacity */
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #ffffff88;
+      color: black;
+    }
+
+    .log {
+      max-height: 100px;
+      overflow-y: auto;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.1);
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .reset {
+      margin-top: 30px;
+      padding: 12px 30px;
+      font-size: 18px;
+      background-color: red;
       color: white;
     }
   </style>
 </head>
 <body>
 
-<h1>Monthly Poop Tracker</h1>
-<div id="current-time"></div>
+  <h1 id="currentDateTime"></h1>
 
-<div id="trackers">
-  <div class="tracker" id="D">
-    <div class="name">D</div>
-    <div class="count" id="count-D">0 poops</div>
-    <div class="timestamp" id="time-D">Last log: N/A</div>
-    <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('D')">I shit today</button>
-    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('D')">Remove shit</button>
-    <button class="btn btn-toggle-log" onclick="toggleLog('D')">Show Log</button>
+  <div class="player" id="player-D">
+    <h2>D: <span id="count-D">0</span></h2>
+    <button onclick="handleShit('D')">I shitted today</button>
     <div class="log" id="log-D"></div>
   </div>
 
-  <div class="tracker" id="O">
-    <div class="name">O</div>
-    <div class="count" id="count-O">0 poops</div>
-    <div class="timestamp" id="time-O">Last log: N/A</div>
-    <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('O')">I shit today</button>
-    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('O')">Remove shit</button>
-    <button class="btn btn-toggle-log" onclick="toggleLog('O')">Show Log</button>
+  <div class="player" id="player-O">
+    <h2>O: <span id="count-O">0</span></h2>
+    <button onclick="handleShit('O')">I shitted today</button>
     <div class="log" id="log-O"></div>
   </div>
 
-  <div class="tracker" id="P">
-    <div class="name">P</div>
-    <div class="count" id="count-P">0 poops</div>
-    <div class="timestamp" id="time-P">Last log: N/A</div>
-    <button class="btn btn-log" onclick="verifyPasscodeAndIncrement('P')">I shit today</button>
-    <button class="btn btn-remove" onclick="verifyPasscodeAndDecrement('P')">Remove shit</button>
-    <button class="btn btn-toggle-log" onclick="toggleLog('P')">Show Log</button>
+  <div class="player" id="player-P">
+    <h2>P: <span id="count-P">0</span></h2>
+    <button onclick="handleShit('P')">I shitted today</button>
     <div class="log" id="log-P"></div>
   </div>
-</div>
 
-<button class="btn btn-reset-all" onclick="verifyReset()">Reset All</button>
+  <button class="reset" onclick="resetAll()">Reset All</button>
 
-<!-- Audio File -->
-<audio id="arabic" src="arabic.mp3" preload="auto"></audio>
+  <audio id="arabic" src="arabic.mp3" preload="auto"></audio>
 
-<!-- Passcode Modal -->
-<div id="passcode-modal">
-  <div class="modal-content">
-    <h3>Enter Passcode</h3>
-    <input type="password" id="passcode-input" />
-    <div style="display: flex; gap: 10px; justify-content: center;">
-      <button class="btn" style="background-color: #4caf50; color: white;" onclick="submitPasscode()">Submit</button>
-      <button class="btn" style="background-color: #ccc;" onclick="closePasscodeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
+  <script>
+    const passwords = {
+      D: "gongaga",
+      O: "oogabooga",
+      P: "awooga"
+    };
 
-<script>
-  const names = ["D", "O", "P"];
-  const passcodes = {
-    "D": "gongaga",
-    "O": "oogabooga",
-    "P": "awooga"
-  };
-
-  const counts = {};
-  const times = {};
-  const logs = {};
-
-  names.forEach(name => {
-    const savedCount = localStorage.getItem(`count-${name}`);
-    const savedTime = localStorage.getItem(`time-${name}`);
-    const savedLogs = JSON.parse(localStorage.getItem(`log-${name}`) || "[]");
-
-    counts[name] = savedCount ? parseInt(savedCount) : 0;
-    times[name] = savedTime || "N/A";
-    logs[name] = savedLogs;
-
-    document.getElementById(`count-${name}`).textContent = counts[name] + " poops";
-    document.getElementById(`time-${name}`).textContent = "Last log: " + times[name];
-    renderLog(name);
-  });
-
-  function updateTime() {
-    const now = new Date();
-    document.getElementById("current-time").textContent = now.toLocaleString();
-  }
-
-  setInterval(updateTime, 1000);
-
-  function increment(name) {
-    counts[name]++;
-    const now = new Date().toLocaleString();
-    times[name] = now;
-    logs[name].push(now);
-
-    localStorage.setItem(`count-${name}`, counts[name]);
-    localStorage.setItem(`time-${name}`, now);
-    localStorage.setItem(`log-${name}`, JSON.stringify(logs[name]));
-
-    document.getElementById(`count-${name}`).textContent = counts[name] + " poops";
-    document.getElementById(`time-${name}`).textContent = "Last log: " + now;
-    renderLog(name);
-
-    document.getElementById('arabic').play();
-  }
-
-  function decrement(name) {
-    if (counts[name] > 0) {
-      counts[name]--;
-      logs[name].pop();
-
-      const now = new Date().toLocaleString();
-      times[name] = now;
-
-      localStorage.setItem(`count-${name}`, counts[name]);
-      localStorage.setItem(`time-${name}`, now);
-      localStorage.setItem(`log-${name}`, JSON.stringify(logs[name]));
-
-      document.getElementById(`count-${name}`).textContent = counts[name] + " poops";
-      document.getElementById(`time-${name}`).textContent = "Last log: " + now;
-      renderLog(name);
-    } else {
-      alert("no more poop logs to remove");
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById("currentDateTime").textContent = now.toLocaleString();
     }
-  }
 
-  function renderLog(name) {
-    const logDiv = document.getElementById(`log-${name}`);
-    logDiv.innerHTML = "";
-    logs[name].forEach((entry, i) => {
-      const div = document.createElement("div");
-      div.className = "log-entry";
-      div.textContent = `#${i + 1}: ${entry}`;
-      logDiv.appendChild(div);
-    });
-  }
-
-  function toggleLog(name) {
-    const logDiv = document.getElementById(`log-${name}`);
-    const toggleBtn = logDiv.previousElementSibling;
-    if (logDiv.style.display === "block") {
-      logDiv.style.display = "none";
-      toggleBtn.textContent = "Show Log";
-    } else {
-      logDiv.style.display = "block";
-      toggleBtn.textContent = "Hide Log";
+    function loadCounts() {
+      ['D', 'O', 'P'].forEach(name => {
+        const count = localStorage.getItem('count-' + name) || 0;
+        document.getElementById('count-' + name).textContent = count;
+        const log = JSON.parse(localStorage.getItem('log-' + name)) || [];
+        renderLog(name, log);
+      });
     }
-  }
 
-  let passcodeTarget = null;
-  let actionType = null;
-
-  function verifyPasscodeAndIncrement(name) {
-    passcodeTarget = name;
-    actionType = "increment";
-    openPasscodeModal();
-  }
-
-  function verifyPasscodeAndDecrement(name) {
-    passcodeTarget = name;
-    actionType = "decrement";
-    openPasscodeModal();
-  }
-
-  function verifyReset() {
-    passcodeTarget = null;
-    actionType = "reset";
-    openPasscodeModal();
-  }
-
-  function openPasscodeModal() {
-    document.getElementById("passcode-input").value = "";
-    document.getElementById("passcode-modal").style.display = "flex";
-    setTimeout(() => {
-      document.getElementById("passcode-input").focus();
-    }, 100);
-  }
-
-  function closePasscodeModal() {
-    document.getElementById("passcode-modal").style.display = "none";
-    passcodeTarget = null;
-    actionType = null;
-  }
-
-  function submitPasscode() {
-    const input = document.getElementById("passcode-input").value.trim();
-
-    if (actionType === "increment" && passcodes[passcodeTarget] === input) {
-      increment(passcodeTarget);
-      closePasscodeModal();
-    } else if (actionType === "decrement" && passcodes[passcodeTarget] === input) {
-      decrement(passcodeTarget);
-      closePasscodeModal();
-    } else if (actionType === "reset" && input === "42069") {
-      closePasscodeModal();
-      if (confirm("reset?")) resetAll();
-    } else {
-      alert("wrong password");
+    function renderLog(name, log) {
+      const logDiv = document.getElementById('log-' + name);
+      logDiv.innerHTML = log.map(entry => `<div>${entry}</div>`).join('');
     }
-  }
 
-  function resetAll() {
-    names.forEach(name => {
-      counts[name] = 0;
-      times[name] = "N/A";
-      logs[name] = [];
+    function handleShit(name) {
+      const entered = prompt(`Enter password for ${name}:`);
+      if (entered !== passwords[name]) {
+        alert("Wrong password!");
+        return;
+      }
 
-      localStorage.setItem(`count-${name}`, 0);
-      localStorage.setItem(`time-${name}`, "N/A");
-      localStorage.setItem(`log-${name}`, JSON.stringify([]));
+      let count = parseInt(localStorage.getItem('count-' + name)) || 0;
+      count++;
+      localStorage.setItem('count-' + name, count);
+      document.getElementById('count-' + name).textContent = count;
 
-      document.getElementById(`count-${name}`).textContent = "0 poops";
-      document.getElementById(`time-${name}`).textContent = "Last log: N/A";
-      renderLog(name);
-    });
-  }
-</script>
+      let log = JSON.parse(localStorage.getItem('log-' + name)) || [];
+      const timestamp = new Date().toLocaleString();
+      log.push(timestamp);
+      localStorage.setItem('log-' + name, JSON.stringify(log));
+      renderLog(name, log);
+
+      // Play sound
+      document.getElementById('arabic').play();
+    }
+
+    function resetAll() {
+      const pass = prompt("Enter reset password:");
+      if (pass !== "42069") {
+        alert("Wrong password!");
+        return;
+      }
+      ['D', 'O', 'P'].forEach(name => {
+        localStorage.removeItem('count-' + name);
+        localStorage.removeItem('log-' + name);
+        document.getElementById('count-' + name).textContent = 0;
+        document.getElementById('log-' + name).innerHTML = "";
+      });
+      alert("All counts reset!");
+    }
+
+    setInterval(updateDateTime, 1000); // update every second
+    updateDateTime();
+    loadCounts();
+  </script>
+
 </body>
 </html>
-<!-- END OF FILE -->
