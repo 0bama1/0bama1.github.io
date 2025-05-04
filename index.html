@@ -72,18 +72,21 @@
   <div class="player" id="player-D">
     <h2>D: <span id="count-D">0</span></h2>
     <button onclick="handleShit('D')">I shitted today</button>
+    <button onclick="removeShit('D')">Remove shit</button>
     <div class="log" id="log-D"></div>
   </div>
 
   <div class="player" id="player-O">
     <h2>O: <span id="count-O">0</span></h2>
     <button onclick="handleShit('O')">I shitted today</button>
+    <button onclick="removeShit('O')">Remove shit</button>
     <div class="log" id="log-O"></div>
   </div>
 
   <div class="player" id="player-P">
     <h2>P: <span id="count-P">0</span></h2>
     <button onclick="handleShit('P')">I shitted today</button>
+    <button onclick="removeShit('P')">Remove shit</button>
     <div class="log" id="log-P"></div>
   </div>
 
@@ -137,6 +140,29 @@
 
       // Play sound
       document.getElementById('arabic').play();
+    }
+
+    function removeShit(name) {
+      const entered = prompt(`Enter password for ${name}:`);
+      if (entered !== passwords[name]) {
+        alert("Wrong password!");
+        return;
+      }
+
+      let count = parseInt(localStorage.getItem('count-' + name)) || 0;
+      if (count <= 0) {
+        alert("Can't go below zero!");
+        return;
+      }
+
+      count--;
+      localStorage.setItem('count-' + name, count);
+      document.getElementById('count-' + name).textContent = count;
+
+      let log = JSON.parse(localStorage.getItem('log-' + name)) || [];
+      log.pop(); // remove the latest entry
+      localStorage.setItem('log-' + name, JSON.stringify(log));
+      renderLog(name, log);
     }
 
     function resetAll() {
